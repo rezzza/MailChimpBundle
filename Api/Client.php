@@ -3,7 +3,7 @@
 namespace Rezzza\MailChimpBundle\Api;
 
 use Rezzza\MailChimpBundle\Connection\ConnectionInterface;
-use Rezzza\Mailchimp\MCAPI;
+use Rezzza\MailChimp\MCAPI;
 
 /**
  * Client
