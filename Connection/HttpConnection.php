@@ -2,10 +2,10 @@
 
 namespace Rezzza\MailChimpBundle\Connection;
 
-use Rezzza\MailChimpBundle\Request;
-use Rezzza\MailChimpBundle\Response;
-use Zend\Http\Client as HttpClient;
-use Zend\Http\Request as HttpRequest;
+use Rezzza\MailChimpBundle\Api\Request;
+use Rezzza\MailChimpBundle\Api\Response;
+
+use Guzzle\Http\Client as HttpClient;
 
 /**
  * HTTP connection for the MailChimp API client
@@ -38,18 +38,14 @@ class HttpConnection implements ConnectionInterface
      */
     public function execute(Request $request)
     {
-        $this->client->setCookies(array());
-        $this->client->resetParameters();
-        $this->client->setUri($this->getUri(
-            $request->getMethod(),
-            $request->getParam('apikey')
-        ));
-        $this->client->setParameterPost($request->getParams());
-        $this->client->setMethod(HttpRequest::METHOD_POST);
+        $uri     = $this->getUri($request->getMethod(), $request->getParam('apikey'));
+        $request = $this->client
+            ->post($uri)
+            ->addPostFields($request->getParams());
 
         try {
-            $rawResponse = $this->client->send();
-            $response = unserialize($rawResponse->getBody());
+            $rawResponse = $request->send();
+            $response    = unserialize($rawResponse->getBody());
             if (false === $response) {
                 // bad response
                 $response = array(
@@ -90,9 +86,9 @@ class HttpConnection implements ConnectionInterface
             if (!$dc) $dc = 'us1';
         }
 
-        $scheme = $this->secure ? 'https://' : 'http://';
-
         $parts = parse_url(self::API_URL);
+        $scheme = $this->secure ? 'https://' : 'http://';
+        $parts  = parse_url(self::API_URL);
 
         return $scheme . $dc . '.' . $parts['host'] . $parts['path'] . '?' . $parts['query'] . '&method=' . $method;
     }
