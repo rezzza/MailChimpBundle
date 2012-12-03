@@ -7,7 +7,7 @@
     <parameters>
         <parameter key="rezzza.mail_chimp.connection.http.class">Rezzza\MailChimpBundle\Connection\HttpConnection</parameter>
         <parameter key="rezzza.mail_chimp.connection.stub.class">Rezzza\MailChimpBundle\Connection\StubConnection</parameter>
-        <parameter key="rezzza.mail_chimp.client.class">Rezzza\MailChimpBundle\Client</parameter>
+        <parameter key="rezzza.mail_chimp.client.class">Rezzza\MailChimpBundle\Api\Client</parameter>
     </parameters>
 
     <services>
