@@ -1,4 +1,4 @@
-<?php                                                                                                                                                                                                                                                                
+<?php
 
 namespace Rezzza\MailChimpBundle\DependencyInjection;
 
@@ -34,7 +34,7 @@ class Configuration implements ConfigurationInterface
                         })
                     ->end()
                     ->info('Supported connections : http, https, stub')
-                    ->defaultValue('https')
+                    ->defaultValue('rezzza.mail_chimp.connection.https')
                 ->end()
             ->end();
 
