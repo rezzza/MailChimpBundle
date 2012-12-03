@@ -1,4 +1,4 @@
 MailChimpBundle
 ===============
 
-Mailchimp bundle for Symfony2 projects
+Mailchimp bundle for Symfony2 projects.

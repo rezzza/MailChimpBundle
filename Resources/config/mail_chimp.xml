@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="rezzza.mail_chimp.connection.http.class">Rezzza\MailChimpBundle\Connection\HttpConnection</parameter>
+        <parameter key="rezzza.mail_chimp.connection.stub.class">Rezzza\MailChimpBundle\Connection\StubConnection</parameter>
+        <parameter key="rezzza.mail_chimp.client.class">Rezzza\MailChimpBundle\Client</parameter>
+    </parameters>
+
+    <services>
+        <!-- Connection "http" -->
+        <service id="rezzza.mail_chimp.connection.http" class="%rezzza.mail_chimp.connection.http.class%" public="false" />
+
+        <!-- Connection "stub" -->
+        <service id="rezzza.mail_chimp.connection.stub" class="%rezzza.mail_chimp.connection.stub.class%" public="false" />
+
+        <!-- Connection "https" -->
+        <service id="rezzza.mail_chimp.connection.https" class="%rezzza.mail_chimp.connection.http.class%" public="false">
+            <argument>true</argument>
+        </service>
+
+        <!-- Client -->
+        <service id="rezzza.mail_chimp.client" class="%rezzza.mail_chimp.client.class%">
+            <argument>%rezzza.mail_chimp.api_key%</argument>
+            <call method="setConnection">
+                <argument type="service" id="rezzza.mail_chimp.connection" />
+            </call>
+        </service>
+    </services>
+</container>
