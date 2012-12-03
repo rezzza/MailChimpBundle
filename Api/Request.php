@@ -1,6 +1,6 @@
 <?php
 
-namespace Rezzza\MailChimpBundle;
+namespace Rezzza\MailChimpBundle\Api;
 
 /**
  * Represents a MailChimp API request

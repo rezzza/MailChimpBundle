@@ -1,9 +1,9 @@
 <?php
 
-namespace Rezzza\MailChimpBundle;
+namespace Rezzza\MailChimpBundle\Api;
 
 use Rezzza\MailChimpBundle\Connection\ConnectionInterface;
-use Mailchimp\MCAPI;
+use Rezzza\Mailchimp\MCAPI;
 
 /**
  * Client

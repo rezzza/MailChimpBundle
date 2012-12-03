@@ -6,7 +6,7 @@
     "homepage": "https://github.com/rezzza/MailChimpBundle",
     "license": "MIT",
     "authors": [{
-        "name": "Community contributors",
+        "name":     "Community contributors",
         "homepage": "https://github.com/rezzza/MailChimpBundle/contributors"
     }],
     "require": {
