@@ -2,8 +2,8 @@
 
 namespace Rezzza\MailChimpBundle\Connection;
 
-use Rezzza\MailChimpBundle\Request;
-use Rezzza\MailChimpBundle\Response;
+use Rezzza\MailChimpBundle\Api\Request;
+use Rezzza\MailChimpBundle\Api\Response;
 
 /**
  * Stub connection for test purposes

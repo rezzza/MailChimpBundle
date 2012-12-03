@@ -2,8 +2,8 @@
 
 namespace Rezzza\MailChimpBundle\Connection;
 
-use Rezzza\MailChimpBundle\Request;
-use Rezzza\MailChimpBundle\Response;
+use Rezzza\MailChimpBundle\Api\Request;
+use Rezzza\MailChimpBundle\Api\Response;
 
 /**
  * Interface that must be implemented by the connection classes
@@ -17,5 +17,5 @@ interface ConnectionInterface
      *
      * @return Response
      */
-    function execute(Request $request);
+    public function execute(Request $request);
 }
