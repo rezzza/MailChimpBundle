@@ -8,11 +8,15 @@
         <parameter key="rezzza.mail_chimp.connection.http.class">Rezzza\MailChimpBundle\Connection\HttpConnection</parameter>
         <parameter key="rezzza.mail_chimp.connection.stub.class">Rezzza\MailChimpBundle\Connection\StubConnection</parameter>
         <parameter key="rezzza.mail_chimp.client.class">Rezzza\MailChimpBundle\Api\Client</parameter>
+        <parameter key="rezzza.mail_chimp.http.client.class">Guzzle\Http\Client</parameter>
     </parameters>
 
     <services>
         <!-- Connection "http" -->
-        <service id="rezzza.mail_chimp.connection.http" class="%rezzza.mail_chimp.connection.http.class%" public="false" />
+        <service id="rezzza.mail_chimp.connection.http" class="%rezzza.mail_chimp.connection.http.class%" public="false" >
+                <argument>false</argument>
+                <argument>rezzza.mail_chimp.http.client</argument>
+        </service>
 
         <!-- Connection "stub" -->
         <service id="rezzza.mail_chimp.connection.stub" class="%rezzza.mail_chimp.connection.stub.class%" public="false" />
@@ -28,6 +32,10 @@
             <call method="setConnection">
                 <argument type="service" id="rezzza.mail_chimp.connection" />
             </call>
+        </service>
+
+        <!-- Client HTTP -->
+        <service id="rezzza.mail_chimp.http.client" class="%rezzza.mail_chimp.http.client.class%">
         </service>
     </services>
 </container>
