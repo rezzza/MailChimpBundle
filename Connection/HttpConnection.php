@@ -12,6 +12,13 @@ use Guzzle\Http\Client as HttpClient;
  */
 class HttpConnection implements ConnectionInterface
 {
+    const HTTP_CODE_CONNECTION_TIMED_OUT = 118;
+
+    const INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR = -100;
+    const INTERNAL_CODE_GENERAL_ERROR = -99;
+    const INTERNAL_CODE_TIMEOUT = -98;
+    const INTERNAL_CODE_PARSE_EXCEPTION = 0;
+
     const API_URL = 'http://api.mailchimp.com/1.3/?output=php';
 
     protected $secure;
@@ -43,30 +50,20 @@ class HttpConnection implements ConnectionInterface
             ->post($uri)
             ->addPostFields($request->getParams());
 
+        $response = false;
         try {
             $rawResponse = $request->send();
-            $response    = unserialize($rawResponse->getBody());
-            if (false === $response) {
-                // bad response
-                $response = array(
-                    'error' => 'Bad Response. Got this: ' . $rawResponse->getBody(),
-                    'code'  => -99
-                );
-            }
+            $response = $this->parseResponse($rawResponse);
         } catch (\Exception $e) {
-            if ($e instanceof TimeoutException) {
-                // timeout exception
-                $response = array(
-                    'error' => 'Could not read response (timed out)',
-                    'code'  => -98
-                );
-            } else {
-                // unknown exception
-                $response = array(
-                    'error' => 'An error occured: ' . $e->getMessage(),
-                    'code'  => -99
-                );
-            }
+            // unknown exception
+            $response = array(
+                'error' => 'An error occurred: ' . $e->getMessage(),
+                'code'  => self::INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR
+            );
+        }
+
+        if (false === $response) {
+            $response = $this->handleValidResponse($rawResponse);
         }
 
         if (is_array($response) && isset($response['error'])) {
@@ -78,6 +75,18 @@ class HttpConnection implements ConnectionInterface
         return new Response($response);
     }
 
+    /**
+     * Check if response is Timeout
+     * @param mixed $rawResponse
+     *
+     * @return bool
+     */
+    private function isReponseTimeout($rawResponse)
+    {
+        return $rawResponse instanceof \Guzzle\Http\Message\Response
+            && self::HTTP_CODE_CONNECTION_TIMED_OUT == $rawResponse->getStatusCode();
+    }
+
     private function getUri($method, $apiKey)
     {
         $dc = 'us1';
@@ -86,10 +95,65 @@ class HttpConnection implements ConnectionInterface
             if (!$dc) $dc = 'us1';
         }
 
-        $parts = parse_url(self::API_URL);
         $scheme = $this->secure ? 'https://' : 'http://';
         $parts  = parse_url(self::API_URL);
 
         return $scheme . $dc . '.' . $parts['host'] . $parts['path'] . '?' . $parts['query'] . '&method=' . $method;
+    }
+
+    /**
+     * Handle any not yet treated response
+     * @param mixed $rawResponse
+     *
+     * @return array
+     */
+    private function handleValidResponse($rawResponse)
+    {
+        if ($this->isReponseTimeout($rawResponse)) {
+            // timeout exception
+            return array(
+                'error' => 'Could not read response (timed out)',
+                'code' => self::INTERNAL_CODE_TIMEOUT
+            );
+        }
+
+        // bad response
+        return array(
+            'error' => 'Bad Response. Got this: ' . $rawResponse->getBody(),
+            'code' => self::INTERNAL_CODE_GENERAL_ERROR
+        );
+    }
+
+    /**
+     * Check if parameter is serialized
+     * @param mixed $data parameter
+     *
+     * @return bool
+     */
+    private function isSerialized($data)
+    {
+        return false !== @unserialize($data);
+    }
+
+    /**
+     * Try to parse given deserializable response
+     * @param mixed $rawResponse
+     *
+     * @return array|mixed
+     */
+    private function parseResponse($rawResponse)
+    {
+        if (false === $rawResponse ){
+            return false;
+        }
+
+        if ($this->isSerialized($rawResponse->getBody())) {
+            return unserialize($rawResponse->getBody());
+        }
+
+        return array(
+            'error' => 'An error occurred: Unable to parse response',
+            'code' => self::INTERNAL_CODE_PARSE_EXCEPTION
+        );
     }
 }
