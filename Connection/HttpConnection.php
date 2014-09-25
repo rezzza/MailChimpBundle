@@ -17,7 +17,7 @@ class HttpConnection implements ConnectionInterface
     const INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR = -100;
     const INTERNAL_CODE_GENERAL_ERROR = -99;
     const INTERNAL_CODE_TIMEOUT = -98;
-    const INTERNAL_CODE_PARSE_EXCEPTION = 0;
+    const INTERNAL_CODE_PARSE_EXCEPTION = -101;
 
     const API_URL = 'http://api.mailchimp.com/1.3/?output=php';
 
@@ -50,9 +50,10 @@ class HttpConnection implements ConnectionInterface
             ->post($uri)
             ->addPostFields($request->getParams());
 
-        $response = false;
+        $rawResponse = false;
         try {
             $rawResponse = $request->send();
+
             $response = $this->parseResponse($rawResponse);
         } catch (\Exception $e) {
             // unknown exception
@@ -63,7 +64,7 @@ class HttpConnection implements ConnectionInterface
         }
 
         if (false === $response) {
-            $response = $this->handleValidResponse($rawResponse);
+            $response = $this->handleEdgeCase($rawResponse);
         }
 
         if (is_array($response) && isset($response['error'])) {
@@ -107,16 +108,8 @@ class HttpConnection implements ConnectionInterface
      *
      * @return array
      */
-    private function handleValidResponse($rawResponse)
+    private function handleEdgeCase($rawResponse)
     {
-        if ($this->isReponseTimeout($rawResponse)) {
-            // timeout exception
-            return array(
-                'error' => 'Could not read response (timed out)',
-                'code' => self::INTERNAL_CODE_TIMEOUT
-            );
-        }
-
         // bad response
         return array(
             'error' => 'Bad Response. Got this: ' . $rawResponse->getBody(),
@@ -143,12 +136,20 @@ class HttpConnection implements ConnectionInterface
      */
     private function parseResponse($rawResponse)
     {
-        if (false === $rawResponse ){
+        if (false === $rawResponse ) {
             return false;
         }
 
+        if ($this->isReponseTimeout($rawResponse)) {
+            // timeout exception
+            return array(
+                'error' => 'Could not read response (timed out)',
+                'code' => self::INTERNAL_CODE_TIMEOUT
+            );
+        }
+
         if ($this->isSerialized($rawResponse->getBody())) {
-            return unserialize($rawResponse->getBody());
+            return @unserialize($rawResponse->getBody());
         }
 
         return array(
