@@ -3,15 +3,14 @@
 namespace Rezzza\MailChimpBundle\Api;
 
 use Rezzza\MailChimpBundle\Connection\ConnectionInterface;
-use Rezzza\MailChimp\MCAPI;
 
 /**
  * Client
  *
- * @uses MCAPI
+ * @uses \Mailchimp
  * @author Sébastien HOUZÉ <s@verylastroom.com>
  */
-class Client extends MCAPI
+class Client extends \Mailchimp
 {
     protected $connection;
     protected $lastRequest;
