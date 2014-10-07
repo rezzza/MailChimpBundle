@@ -4,7 +4,6 @@ namespace Rezzza\MailChimpBundle\Connection;
 
 use Rezzza\MailChimpBundle\Api\Request;
 use Rezzza\MailChimpBundle\Api\Response;
-
 use Guzzle\Http\Client as HttpClient;
 
 /**
@@ -12,14 +11,13 @@ use Guzzle\Http\Client as HttpClient;
  */
 class HttpConnection implements ConnectionInterface
 {
-    const HTTP_CODE_CONNECTION_TIMED_OUT = 118;
 
+    const HTTP_CODE_CONNECTION_TIMED_OUT = 118;
     const INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR = -100;
     const INTERNAL_CODE_GENERAL_ERROR = -99;
     const INTERNAL_CODE_TIMEOUT = -98;
     const INTERNAL_CODE_PARSE_EXCEPTION = -101;
-
-    const API_URL = 'http://api.mailchimp.com/1.3/?output=php';
+    const API_URL = 'http://api.mailchimp.com/2.0/';
 
     protected $secure;
     protected $client;
@@ -45,21 +43,21 @@ class HttpConnection implements ConnectionInterface
      */
     public function execute(Request $request)
     {
-        $uri     = $this->getUri($request->getMethod(), $request->getParam('apikey'));
-        $request = $this->client
-            ->post($uri)
-            ->addPostFields($request->getParams());
+        $uri = $this->getUri($request->getMethod(), $request->getParam('apikey'));
+        $httpRequest = $this->client
+                ->post($uri)
+                ->addPostFields($request->getParams());
 
         $rawResponse = false;
         try {
-            $rawResponse = $request->send();
+            $rawResponse = $httpRequest->send();
 
             $response = $this->parseResponse($rawResponse);
         } catch (\Exception $e) {
             // unknown exception
             $response = array(
                 'error' => 'An error occurred: ' . $e->getMessage(),
-                'code'  => self::INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR
+                'code' => self::INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR
             );
         }
 
@@ -84,22 +82,27 @@ class HttpConnection implements ConnectionInterface
      */
     private function isReponseTimeout($rawResponse)
     {
-        return $rawResponse instanceof \Guzzle\Http\Message\Response
-            && self::HTTP_CODE_CONNECTION_TIMED_OUT == $rawResponse->getStatusCode();
+        return $rawResponse instanceof \Guzzle\Http\Message\Response && self::HTTP_CODE_CONNECTION_TIMED_OUT == $rawResponse->getStatusCode();
     }
 
     private function getUri($method, $apiKey)
     {
         $dc = 'us1';
-        if (strstr($apiKey, '-')){
+        if (strstr($apiKey, '-')) {
             list($key, $dc) = explode('-', $apiKey, 2);
-            if (!$dc) $dc = 'us1';
+            if (!$dc)
+                $dc = 'us1';
         }
 
         $scheme = $this->secure ? 'https://' : 'http://';
-        $parts  = parse_url(self::API_URL);
+        $parts = parse_url(self::API_URL);
 
-        return $scheme . $dc . '.' . $parts['host'] . $parts['path'] . '?' . $parts['query'] . '&method=' . $method;
+        $uri = $scheme . $dc . '.' . $parts['host'] . $parts['path'] . $method . '.php';
+        if (isset($parts['query']) === true) {
+            $uri .= '?' . $parts['query'];
+        }
+        
+        return $uri;
     }
 
     /**
@@ -136,7 +139,7 @@ class HttpConnection implements ConnectionInterface
      */
     private function parseResponse($rawResponse)
     {
-        if (false === $rawResponse ) {
+        if (false === $rawResponse) {
             return false;
         }
 
@@ -157,4 +160,5 @@ class HttpConnection implements ConnectionInterface
             'code' => self::INTERNAL_CODE_PARSE_EXCEPTION
         );
     }
+
 }
