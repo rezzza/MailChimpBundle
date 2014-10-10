@@ -17,7 +17,7 @@ class HttpConnection implements ConnectionInterface
     const INTERNAL_CODE_GENERAL_ERROR = -99;
     const INTERNAL_CODE_TIMEOUT = -98;
     const INTERNAL_CODE_PARSE_EXCEPTION = -101;
-    const API_URL = 'http://api.mailchimp.com/2.0/';
+    const API_URL = 'https://api.mailchimp.com/2.0/';
 
     protected $secure;
     protected $client;
@@ -45,8 +45,8 @@ class HttpConnection implements ConnectionInterface
     {
         $uri = $this->getUri($request->getMethod(), $request->getParam('apikey'));
         $httpRequest = $this->client
-                ->post($uri)
-                ->addPostFields($request->getParams());
+                ->post($uri, array('Content-Type' => 'application/json'))
+                ->setBody(json_encode($request->getParams()));
 
         $rawResponse = false;
         try {
