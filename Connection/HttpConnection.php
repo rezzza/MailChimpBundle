@@ -87,11 +87,12 @@ class HttpConnection implements ConnectionInterface
 
     private function getUri($method, $apiKey)
     {
-        $dc = 'us1';
+        $dc = null;
         if (strstr($apiKey, '-')) {
-            list($key, $dc) = explode('-', $apiKey, 2);
-            if (!$dc)
-                $dc = 'us1';
+            list($key, $dc) = explode('-', $apiKey, 2);            
+        }
+        if (empty($dc) === true) {
+            $dc = 'us1';
         }
 
         $scheme = $this->secure ? 'https://' : 'http://';
