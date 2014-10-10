@@ -9,23 +9,66 @@ namespace Rezzza\MailChimpBundle\Tests\Units\Api;
  */
 class Client extends \mageekguy\atoum\test
 {
+    const CUSTOMER_LIST_ID = 'db993d96da';
+
+    private $customerEmail;
+    
+    /**
+     * Test batch-subscribe success
+     */
+    public function testBatchSubscribeSuccess()
+    {
+        $response = $this->getClient()->call('lists/batch-subscribe', $this->getBatchSubscribeParameters());
+        $this->array($response)->isNotEmpty()->notHasKey('error');
+    }
 
     /**
-     * Test call
+     * Test batch-subscribe fail
      */
-    public function testCall()
+    public function testBatchSubscribeFail()
+    {
+        $response = $this->getClient()->call('lists/batch-subscribe', array_merge($this->getBatchSubscribeParameters(), array('id' => 'victor_samuel_mackey')));
+        $this->array($response)->isNotEmpty()->hasKey('error');
+    }
+
+    /**
+     * Test batch-unsubscribe success
+     */
+    public function testBatchUnsubscribeSuccess()
+    {
+        $response = $this->getClient()->call('lists/batch-unsubscribe', $this->getBatchUnsubscribeParameters());
+        $this->array($response)->isNotEmpty()->notHasKey('error');
+    }
+
+    /**
+     * Test batch-unsubscribe fail
+     */
+    public function testBatchUnsubscribeFail()
+    {
+        $response = $this->getClient()->call('lists/batch-unsubscribe', array_merge($this->getBatchUnsubscribeParameters(), array('id' => 'victor_samuel_mackey')));
+        $this->array($response)->isNotEmpty()->hasKey('error');
+    }
+
+    /**
+     * Get MailChimp Client
+     * @return \Rezzza\MailChimpBundle\Api\Client
+     */
+    private function getClient()
     {
         $client = new \Rezzza\MailChimpBundle\Api\Client('e90c270f8cf2cfbb2d5c14a36ba884c2-us9');
         $client->setConnection(new \Rezzza\MailChimpBundle\Connection\HttpConnection(true));
 
-        $this->testSubscribe($client);
-        $this->testUnSubscribe($client);
+        return $client;
     }
 
-    private function testSubscribe(\Rezzza\MailChimpBundle\Api\Client $client)
+    /**
+     * Parameters for subscribe method
+     * @return array
+     */
+    private function getBatchSubscribeParameters()
     {
-        $parameters = array(
-            'id' => 'db993d96da',
+        return array(
+            'id' => self::CUSTOMER_LIST_ID,
             'batch' => array(
                 array(
                     'email' => array('email' => $this->getEmail()),
@@ -37,19 +80,16 @@ class Client extends \mageekguy\atoum\test
             "update_existing" => true,
             "replace_interests" => true
         );
-
-        //Test success
-        $successResponse = $client->call('lists/batch-subscribe', $parameters);
-        $this->array($successResponse)->isNotEmpty()->notHasKey('error');
-
-        // Test Error
-        $errorResponse = $client->call('lists/batch-subscribe', array_merge($parameters, array('id' => 'victor_samuel_mackey')));
-        $this->array($errorResponse)->isNotEmpty()->hasKey('error');
     }
 
-    private function testUnsubscribe(\Rezzza\MailChimpBundle\Api\Client $client)
+    /**
+     * Parameters for unsubscribe method
+     * @return array
+     */
+    private function getBatchUnsubscribeParameters()
     {
-        $parameters = array('id' => 'db993d96da',
+        return array(
+            'id' => self::CUSTOMER_LIST_ID,
             'batch' => array(
                 array(
                     'email' => $this->getEmail(),
@@ -59,29 +99,37 @@ class Client extends \mageekguy\atoum\test
             "send_goodbye" => false,
             "send_notify" => false,
         );
-
-        //Test success
-        $successResponse = $client->call('lists/batch-unsubscribe', $parameters);
-        $this->array($successResponse)->isNotEmpty()->notHasKey('error');
-
-        // Test Error
-        $errorResponse = $client->call('lists/batch-unsubscribe', array_merge($parameters, array('id' => 'victor_samuel_mackey')));
-        $this->array($errorResponse)->isNotEmpty()->hasKey('error');
     }
 
+    /**
+     * Customer email
+     * @return string
+     */
     private function getEmail()
     {
-        return 'jdoe@god.fr';
+        if (is_null($this->customerEmail) === true) {
+            $this->customerEmail = 'mika+mailchimptest'.time().'@verylastroom.com';
+        }
+        
+        return $this->customerEmail;
     }
 
+    /**
+     * Customer email type
+     * @return string
+     */
     private function getEmailType()
     {
         return 'html';
     }
 
+    /**
+     * Customer merge_vars
+     * @return array
+     */
     private function getMergeVars()
     {
-        $vars = array(
+        return array(
             'FNAME' => 'john',
             'LNAME' => 'doe',
             'GENDER' => 'Male',
@@ -96,8 +144,6 @@ class Client extends \mageekguy\atoum\test
             'REF_CODE' => 'JDOE',
             'CREDIT_EXP' => date('Y-m-d H:i:s'),
         );
-
-        return $vars;
     }
 
 }
