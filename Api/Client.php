@@ -25,7 +25,7 @@ class Client extends \Mailchimp
     public function __construct($apiKey)
     {
         parent::__construct($apiKey, array(
-            'CURLOPT_FOLLOWLOCATION' => false,
+            'CURLOPT_FOLLOWLOCATION' => true,
         ));
 
         $this->lastRequest = null;
@@ -70,7 +70,7 @@ class Client extends \Mailchimp
      *
      * @return Response
      */
-    public function callServer(Request $request)
+    private function callServer(Request $request)
     {
         $this->errorMessage = null;
         $this->errorCode = null;
