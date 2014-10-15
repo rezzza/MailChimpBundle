@@ -3,16 +3,16 @@
 namespace Rezzza\MailChimpBundle\Api;
 
 use Rezzza\MailChimpBundle\Connection\ConnectionInterface;
-use Rezzza\MailChimp\MCAPI;
 
 /**
  * Client
  *
- * @uses MCAPI
+ * @uses \Mailchimp
  * @author Sébastien HOUZÉ <s@verylastroom.com>
  */
-class Client extends MCAPI
+class Client extends \Mailchimp
 {
+
     protected $connection;
     protected $lastRequest;
     protected $lastResponse;
@@ -24,9 +24,11 @@ class Client extends MCAPI
      */
     public function __construct($apiKey)
     {
-        parent::__construct($apiKey);
+        parent::__construct($apiKey, array(
+            'CURLOPT_FOLLOWLOCATION' => true,
+        ));
 
-        $this->lastRequest  = null;
+        $this->lastRequest = null;
         $this->lastResponse = null;
     }
 
@@ -53,10 +55,10 @@ class Client extends MCAPI
     /**
      * {@inheritDoc}
      */
-    public function callServer($method, $params)
+    public function call($method, $params)
     {
-        $request  = new Request($method, $params);
-        $response = $this->call($request);
+        $request = new Request($method, $params);
+        $response = $this->callServer($request);
 
         return $response->getContent();
     }
@@ -68,12 +70,12 @@ class Client extends MCAPI
      *
      * @return Response
      */
-    public function call(Request $request)
+    private function callServer(Request $request)
     {
         $this->errorMessage = null;
-        $this->errorCode    = null;
+        $this->errorCode = null;
 
-        $request->setParam('apikey', $this->api_key);
+        $request->setParam('apikey', $this->apikey);
 
         $response = $this->connection->execute($request);
 
@@ -81,10 +83,10 @@ class Client extends MCAPI
             $content = $response->getContent();
 
             $this->errorMessage = $content['error'];
-            $this->errorCode    = $content['code'];
+            $this->errorCode = $content['code'];
         }
 
-        $this->lastRequest  = $request;
+        $this->lastRequest = $request;
         $this->lastResponse = $response;
 
         return $response;
@@ -109,4 +111,5 @@ class Client extends MCAPI
     {
         return $this->lastResponse;
     }
+
 }

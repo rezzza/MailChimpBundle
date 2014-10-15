@@ -11,7 +11,7 @@
     }],
     "require": {
         "php": ">=5.3.3",
-        "rezzza/mailchimp": "1.3.*",
+        "mailchimp/mailchimp": "2.0.5",
         "guzzle/http": "3.*"
     },
     "require-dev": {
