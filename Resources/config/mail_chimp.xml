@@ -15,7 +15,7 @@
         <!-- Connection "http" -->
         <service id="rezzza.mail_chimp.connection.http" class="%rezzza.mail_chimp.connection.http.class%" public="false" >
                 <argument>false</argument>
-                <argument>rezzza.mail_chimp.http.client</argument>
+                <argument type="service" id="rezzza.mail_chimp.http.client"/>
         </service>
 
         <!-- Connection "stub" -->
