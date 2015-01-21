@@ -2,9 +2,10 @@
 
 namespace Rezzza\MailChimpBundle\Connection;
 
+use Guzzle\Http\Client as HttpClient;
+use Guzzle\Http\Exception\BadResponseException;
 use Rezzza\MailChimpBundle\Api\Request;
 use Rezzza\MailChimpBundle\Api\Response;
-use Guzzle\Http\Client as HttpClient;
 
 /**
  * HTTP connection for the MailChimp API client
@@ -53,8 +54,14 @@ class HttpConnection implements ConnectionInterface
             $rawResponse = $httpRequest->send();
 
             $response = $this->parseResponse($rawResponse);
+        } catch (BadResponseException $e) {
+            $body = $this->parseResponse($e->getResponse());
+
+            $response = array(
+                'error' => isset($body['error']) ? $body['error'] : 'An error occured: ' . $e->getMessage(),
+                'code' => isset($body['code']) ? $body['code'] : self::INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR
+            );
         } catch (\Exception $e) {
-            // unknown exception
             $response = array(
                 'error' => 'An error occurred: ' . $e->getMessage(),
                 'code' => self::INTERNAL_CODE_UNKNOWN_EXCEPTION_ERROR
@@ -89,7 +96,7 @@ class HttpConnection implements ConnectionInterface
     {
         $dc = null;
         if (strstr($apiKey, '-')) {
-            list($key, $dc) = explode('-', $apiKey, 2);            
+            list($key, $dc) = explode('-', $apiKey, 2);
         }
         if (empty($dc) === true) {
             $dc = 'us1';
@@ -102,7 +109,7 @@ class HttpConnection implements ConnectionInterface
         if (isset($parts['query']) === true) {
             $uri .= '?' . $parts['query'];
         }
-        
+
         return $uri;
     }
 
