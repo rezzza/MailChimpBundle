@@ -12,7 +12,7 @@ class Client extends \mageekguy\atoum\test
     const CUSTOMER_LIST_ID = 'db993d96da';
 
     private $customerEmail;
-    
+
     /**
      * Test batch-subscribe success
      */
@@ -27,8 +27,11 @@ class Client extends \mageekguy\atoum\test
      */
     public function testBatchSubscribeFail()
     {
-        $response = $this->getClient()->call('lists/batch-subscribe', array_merge($this->getBatchSubscribeParameters(), array('id' => 'victor_samuel_mackey')));
-        $this->array($response)->isNotEmpty()->hasKey('error');
+        $client = $this->getClient();
+        $response = $client->call('lists/batch-subscribe', array_merge($this->getBatchSubscribeParameters(), array('id' => 'victor_samuel_mackey')));
+        $this->array($response)->isNotEmpty()->hasKey('error')
+            ->integer($client->getLastErrorCode())->isEqualTo(200)
+            ->string($client->getLastErrorMessage())->isEqualTo('Invalid MailChimp List ID: victor_samuel_mackey');
     }
 
     /**
@@ -110,7 +113,7 @@ class Client extends \mageekguy\atoum\test
         if (is_null($this->customerEmail) === true) {
             $this->customerEmail = 'mika+mailchimptest'.time().'@verylastroom.com';
         }
-        
+
         return $this->customerEmail;
     }
 

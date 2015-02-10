@@ -12,10 +12,26 @@ use Rezzza\MailChimpBundle\Connection\ConnectionInterface;
  */
 class Client extends \Mailchimp
 {
-
+    /** @var ConnectionInterface */
     protected $connection;
+
+    /** @var Request */
     protected $lastRequest;
+
+    /** @var Response */
     protected $lastResponse;
+
+    /**
+     * @var string
+     * @deprecated Prefer using Client::getLastErrorMessage()
+     */
+    public $errorMessage;
+
+    /**
+     * @var int
+     * @deprecated Prefer using Client::getLastErrorCode()
+     */
+    public $errorCode;
 
     /**
      * Constructor
@@ -112,4 +128,19 @@ class Client extends \Mailchimp
         return $this->lastResponse;
     }
 
+    /**
+     * @return string
+     */
+    public function getLastErrorMessage()
+    {
+        return $this->errorMessage;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastErrorCode()
+    {
+        return $this->errorCode;
+    }
 }
