@@ -34,6 +34,12 @@ class Client extends \Mailchimp
     public $errorCode;
 
     /**
+     * @var \Mailchimp_Lists
+     * @deprecated Prefer using Client::getMailChimpLists()
+     */
+    public $lists;
+
+    /**
      * Constructor
      *
      * @param string $apiKey
@@ -142,5 +148,15 @@ class Client extends \Mailchimp
     public function getLastErrorCode()
     {
         return $this->errorCode;
+    }
+
+    /**
+     * Allow to send email in batch
+     *
+     * @return \Mailchimp_Lists
+     */
+    public function getMailChimpLists()
+    {
+        return $this->lists;
     }
 }
